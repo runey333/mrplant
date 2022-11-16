@@ -1,0 +1,46 @@
+target C {
+    threading: false,
+    build: "../mrplant/build_nrf_unix.sh"
+};
+
+preamble {=
+
+=}
+
+reactor FSM(error:int()) {
+    input level:int;
+    input moisture:int;
+    state low:int(level-error);
+    state high:int(level+error);
+    output water:bool;
+
+
+    initial mode IDLE {
+        reaction(moisture) -> WATERING, water {=
+            if (moisture < low) {
+                lf_set_mode(WATERING);
+                lf_set(water, true);
+            }
+        =}
+    }
+
+    mode WATERING {
+        reaction(moisture) -> IDLE, water {=
+            if (moisture > high) {
+                lf_set_mode(IDLE);
+                lf_set(water, false);
+            }
+        =}
+    }
+}
+
+main reactor {
+    timer t(0, 100 msec);
+    fsm = new FSM(error = 10);
+
+    reaction(t) -> fsm.level, fsm.moisture {=
+        
+    =}
+}
+
+
