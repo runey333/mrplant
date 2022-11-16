@@ -7,15 +7,17 @@ preamble {=
 
 =}
 
-reactor FSM(error:int()) {
+reactor FSM(error:int(10)) {
     input level:int;
     input moisture:int;
-    state low:int(level-error);
-    state high:int(level+error);
+    state low:int(300);
+    state high:int(300);
     output water:bool;
 
 
     initial mode IDLE {
+        self->low = level - self->error;
+        self->high = level + self->error;
         reaction(moisture) -> WATERING, water {=
             if (moisture < low) {
                 lf_set_mode(WATERING);
@@ -26,6 +28,8 @@ reactor FSM(error:int()) {
 
     mode WATERING {
         reaction(moisture) -> IDLE, water {=
+            self->low = level - self->error;
+            self->high = level + self->error;
             if (moisture > high) {
                 lf_set_mode(IDLE);
                 lf_set(water, false);
