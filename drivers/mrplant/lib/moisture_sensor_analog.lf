@@ -1,0 +1,60 @@
+target C;
+
+preamble{=
+    #include "nrfx_gpiote.h"
+    #include "nrfx_saadc.h"
+    #include "gpio.h"
+    
+
+    #define VDD 3.3
+    #define MOISTURE_PIN 3
+
+    #define MOISTURE_CHANNEL 0
+
+    void saadc_callback (nrfx_saadc_evt_t const * p_event) {
+        // Ignore ADC callbacks.
+    }
+
+    nrf_saadc_value_t sample_value(uint8_t channel) {
+        nrf_saadc_value_t val;
+        ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
+        APP_ERROR_CHECK(error_code);
+        return val;
+    }
+
+    bool moisture_sensor_initialized = false;
+    
+=}
+
+reactor Moisture {
+    input trigger:bool;
+    output level:uint16_t;
+
+    reaction(startup){=
+        if (moisture_sensor_initialized) return;
+        moisture_sensor_initialized = true;
+
+        nrfx_saadc_config_t saadc_config = NRFX_SAADC_DEFAULT_CONFIG;
+        saadc_config.resolution = NRF_SAADC_RESOLUTION_8BIT;
+        ret_code_t error_code = nrfx_saadc_init(&saadc_config, saadc_callback);
+        APP_ERROR_CHECK(error_code);
+
+        nrf_saadc_channel_config_t channel_config = NRFX_SAADC_DEFAULT_CHANNEL_CONFIG_SE(0);
+        channel_config.gain         = NRF_SAADC_GAIN1;
+        channel_config.pin_p        = NRF_SAADC_INPUT_AIN5;
+        channel_config.acq_time     = NRF_SAADC_ACQTIME_40US
+        error_code = nrfx_saadc_channel_init(MOISTURE_CHANNEL, &channel_config);
+        APP_ERROR_CHECK(error_code);
+        
+        
+    =}
+
+    reaction(trigger) -> level{=
+        nrf_saadc_value_t moist;
+        if(trigger->value) {
+            moist = sample_value(MOISTURE_CHANNEL)
+        }
+        lf_set(level,moist);
+
+    =}
+}
