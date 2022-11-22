@@ -1,0 +1,40 @@
+
+target C {
+    threading: false,
+    build: "scripts/build_nrf_unix.sh",
+    fast:false
+};
+
+
+preamble {=
+    #include <stdio.h>
+    #include "drivers/nrf_drv_config.h"
+    #include "nrfx_gpiote.h"
+
+=}
+
+main reactor {
+    
+    
+    timer t(0, 500 msec);
+
+    reaction(startup) {=
+        ret_code_t error_code = NRF_SUCCESS;
+
+        // Initialize GPIO driver.
+        if (!nrfx_gpiote_is_init()) {
+            error_code = nrfx_gpiote_init();
+        }
+        APP_ERROR_CHECK(error_code);
+        
+        // Configure LEDs.
+        // Manually-controlled (simple) output, initially set.
+        nrfx_gpiote_out_config_t out_config = NRFX_GPIOTE_CONFIG_OUT_SIMPLE(true);
+        error_code = nrfx_gpiote_out_init(LED1, &out_config);
+        APP_ERROR_CHECK(error_code);
+    =}
+        
+    reaction(t) {=
+        nrfx_gpiote_out_toggle(LED1);
+    =}
+}
