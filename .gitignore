@@ -1,2 +1,9 @@
 .vscode/
 drivers/nrfx/
+ble_scripts
+drivers
+lib
+lf_buckler_revC
+platform
+scripts
+src
