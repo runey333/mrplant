@@ -5,7 +5,8 @@ preamble{=
     #include "nrfx_saadc.h"
     #include "nrfx_pwm.h"
     
-    
+    PWM_PIN = NRF_GPIO_PIN_MAP(0,5);
+
     nrfx_pwm_t m_pwm0 = NRFX_PWM_INSTANCE(0);
 
     bool pump_initialized = false;
@@ -17,7 +18,7 @@ preamble{=
         nrfx_pwm_config_t pwm_config = NRFX_PWM_DEFAULT_CONFIG;
 
         // We must override some of the parameters:
-        // pwm_config.output_pins[0] = LED_1; // Connect LED_1 on the nRF52840 DK to PWM Channel 0
+        pwm_config.output_pins[0] = PWM_PIN; // Connect PIN_5 on the nRF52840 DK to PWM Channel 0
         // pwm_config.output_pins[1] = LED_2; // Connect LED_2 on the nRF52840 DK to PWM Channel 1
         // pwm_config.output_pins[2] = LED_3; // Connect LED_3 on the nRF52840 DK to PWM Channel 2
         // pwm_config.output_pins[3] = LED_4; // Connect LED_4 on the nRF52840 DK to PWM Channel 3
