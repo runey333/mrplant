@@ -5,7 +5,6 @@ preamble{=
     #include "nrfx_saadc.h"
     
 
-    #define VDD 3.3
     #define MOISTURE_PIN 3
 
     #define MOISTURE_CHANNEL 0
@@ -27,7 +26,7 @@ preamble{=
 
 reactor Moisture {
     input trigger:bool;
-    output level:nrf_saadc_value_t;
+    output moisture:nrf_saadc_value_t;
 
     reaction(startup){=
         if (moisture_sensor_initialized) return;
@@ -48,12 +47,12 @@ reactor Moisture {
         
     =}
 
-    reaction(trigger) -> level{=
+    reaction(trigger) -> moisture{=
         nrf_saadc_value_t moist;
         if(trigger->value) {
             moist = sample_value(MOISTURE_CHANNEL);
         }
-        lf_set(level,moist);
+        lf_set(moisture,moist);
 
     =}
 }

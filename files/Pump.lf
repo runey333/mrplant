@@ -5,7 +5,7 @@ preamble{=
     #include "nrfx_saadc.h"
     #include "nrfx_pwm.h"
     
-    PWM_PIN = NRF_GPIO_PIN_MAP(0,5);
+    PWM_PIN = NRF_GPIO_PIN_MAP(0,4);
 
     nrfx_pwm_t m_pwm0 = NRFX_PWM_INSTANCE(0);
 
@@ -55,6 +55,7 @@ preamble{=
 
 reactor Pump {
     input water:bool;
+    output watering:bool;
 
     reaction(startup){=
         if (!pump_initialized) {
@@ -62,13 +63,15 @@ reactor Pump {
         }
     =}
 
-    reaction(water) -> level{=
+    reaction(water) -> watering{=
         if(water->value) {
             pwm_duty_cycle_values.channel_0 = 50; // 50% duty cycle
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
+            lf_set(watering,true);
         } else {
             pwm_duty_cycle_values.channel_0 = 0; // PWM turned off
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
+            lf_set(watering,false);
         }
     =}
 }
