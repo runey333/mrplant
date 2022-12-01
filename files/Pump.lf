@@ -1,9 +1,9 @@
 target C;
 
 preamble{=
-    #include "nrfx_gpiote.h"
-    #include "nrfx_saadc.h"
+    #include "nrf_gpio.h"
     #include "nrfx_pwm.h"
+    
     
     PWM_PIN = NRF_GPIO_PIN_MAP(0,4);
 
@@ -19,9 +19,9 @@ preamble{=
 
         // We must override some of the parameters:
         pwm_config.output_pins[0] = PWM_PIN; // Connect PIN_5 on the nRF52840 DK to PWM Channel 0
-        // pwm_config.output_pins[1] = LED_2; // Connect LED_2 on the nRF52840 DK to PWM Channel 1
-        // pwm_config.output_pins[2] = LED_3; // Connect LED_3 on the nRF52840 DK to PWM Channel 2
-        // pwm_config.output_pins[3] = LED_4; // Connect LED_4 on the nRF52840 DK to PWM Channel 3
+        pwm_config.output_pins[1] = NRFX_PWM_PIN_NOT_USED; // Connect LED_2 on the nRF52840 DK to PWM Channel 1
+        pwm_config.output_pins[2] = NRFX_PWM_PIN_NOT_USED; // Connect LED_3 on the nRF52840 DK to PWM Channel 2
+        pwm_config.output_pins[3] = NRFX_PWM_PIN_NOT_USED; // Connect LED_4 on the nRF52840 DK to PWM Channel 3
         pwm_config.top_value    = 100; // Make PWM count from 0 - 100
         pwm_config.load_mode    = NRF_PWM_LOAD_INDIVIDUAL; // Use individual duty cycle for each PWM channel
         
@@ -60,18 +60,22 @@ reactor Pump {
     reaction(startup){=
         if (!pump_initialized) {
             init_pwm();
+            printf("Pump initialized\n");
         }
     =}
 
     reaction(water) -> watering{=
         if(water->value) {
+            
             pwm_duty_cycle_values.channel_0 = 50; // 50% duty cycle
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
             lf_set(watering,true);
+            printf("Should be watering\n");
         } else {
             pwm_duty_cycle_values.channel_0 = 0; // PWM turned off
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
             lf_set(watering,false);
+            printf("Should stop\n");
         }
     =}
 }
