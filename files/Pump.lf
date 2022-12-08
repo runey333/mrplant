@@ -18,7 +18,7 @@ preamble{=
         nrfx_pwm_config_t pwm_config = NRFX_PWM_DEFAULT_CONFIG;
 
         // We must override some of the parameters:
-        pwm_config.output_pins[0] = PWM_PIN; // Connect PIN_5 on the nRF52840 DK to PWM Channel 0
+        pwm_config.output_pins[0] = PWM_PIN; // Connect PIN_4 on the nRF52840 DK to PWM Channel 0
         pwm_config.output_pins[1] = NRFX_PWM_PIN_NOT_USED; // Connect LED_2 on the nRF52840 DK to PWM Channel 1
         pwm_config.output_pins[2] = NRFX_PWM_PIN_NOT_USED; // Connect LED_3 on the nRF52840 DK to PWM Channel 2
         pwm_config.output_pins[3] = NRFX_PWM_PIN_NOT_USED; // Connect LED_4 on the nRF52840 DK to PWM Channel 3
@@ -34,14 +34,15 @@ preamble{=
 
     static nrf_pwm_values_individual_t pwm_duty_cycle_values = 
     {
-        .channel_0 = 50, //< Duty cycle value for channel 0.
+        .channel_0 = 100, //< Duty cycle value for channel 0.
         .channel_1 = 0, //< Duty cycle value for channel 1.
         .channel_2 = 0, //< Duty cycle value for channel 2.
         .channel_3 = 0  //< Duty cycle value for channel 3.
     };
 
     static nrf_pwm_sequence_t pwm_sequence =
-    {
+    {            //app_pwm_enable(&m_pwm0);
+
         .values.p_individual = &pwm_duty_cycle_values,
         .length          = (sizeof(pwm_duty_cycle_values) / sizeof(uint16_t)),
         .repeats         = 0,
@@ -66,13 +67,16 @@ reactor Pump {
 
     reaction(water) -> watering{=
         if(water->value) {
-            
-            pwm_duty_cycle_values.channel_0 = 50; // 50% duty cycle
+            //app_pwm_enable(&m_pwm0);
+            pwm_duty_cycle_values.channel_0 = 100; // 100% duty cycle
+            pwm_sequence.values.p_individual = &pwm_duty_cycle_values;
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
             lf_set(watering,true);
             printf("Should be watering\n");
         } else {
+            //app_pwm_disable(&m_pwm0);
             pwm_duty_cycle_values.channel_0 = 0; // PWM turned off
+            pwm_sequence.values.p_individual = &pwm_duty_cycle_values;
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
             lf_set(watering,false);
             printf("Should stop\n");

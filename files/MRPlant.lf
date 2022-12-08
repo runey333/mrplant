@@ -4,8 +4,8 @@ target C {
 };
 
 import Pump from "lib/Pump.lf"
-// import Moisture from "lib/SensorADC.lf"
-// import FSM from "lib/Fsm.lf"
+import Moisture from "lib/SensorADC.lf"
+import FSM from "lib/Fsm.lf"
 preamble {=
 
 =}
@@ -13,23 +13,23 @@ preamble {=
 main reactor {
     timer t(0, 1000 msec);
     state toggle:bool(false);
-    // fsm = new FSM(error = 10);
-    // moistureSense = new Moisture();
+    fsm = new FSM(error = 10);
+    moistureSense = new Moisture();
     pump = new Pump();
 
-    // reaction(t) -> moistureSense.trigger {=
-    //     lf_set(moistureSense.trigger, self->toggle);
-    //     self->toggle = !self->toggle;
-    // =}
-
-    // reaction(moistureSense.moisture) -> fsm.moisture {=
-    //     lf_set(fsm.moisture, moistureSense.moisture);
-    // =}
-
-    reaction(t) -> pump.water {=
-
-        lf_set(pump.water, self->toggle);
+    reaction(t) -> moistureSense.trigger {=
+        lf_set(moistureSense.trigger, self->toggle);
         self->toggle = !self->toggle;
+    =}
+
+    reaction(moistureSense.moisture) -> fsm.moisture {=
+        lf_set(fsm.moisture, moistureSense.moisture);
+    =}
+
+    reaction(fsm.water) -> pump.water {=
+
+        lf_set(pump.water, fsm.water);
+        //self->toggle = !self->toggle;
     =}
 }
 
