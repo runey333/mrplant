@@ -5,6 +5,8 @@ from bleak import BleakScanner, BleakClient
 
 app = Flask(__name__)
 
+moisture_level = 500
+
 async def find():
     devices = await BleakScanner.discover()
     for d in devices:
@@ -16,9 +18,10 @@ async def find():
 
 @app.route("/set/<level>", methods=['POST'])
 def set_moisture(level):
-    return {"result" : f"set to {level}"}
+    moisture_level = level
+    return {"result" : f"set to {moisture_level}"}
     
 @app.route("/get", methods=['GET'])
 def get_moisture():
     asyncio.run(find())
-    return {"result" : str(444)}
+    return {"result" : str(moisture_level)}
