@@ -4,15 +4,15 @@ from bleak import BleakScanner, BleakClient, BleakError
 from ble_utils import parse_ble_args, handle_sigint
 import sys
 
-args = parse_ble_args('Print advertisement data from a BLE device')
-addr = args.addr.lower()
-timeout = args.timeout
-handle_sigint()
+app = Flask(__name__)
+
+#args = parse_ble_args('Print advertisement data from a BLE device')
+#addr = args.addr.lower()
+#timeout = args.timeout
+#handle_sigint()
 
 moisture_level = 500
 SERVICE_UUID = "790a1915-6284-4d1a-957d-23be708470bb"
-
-app = Flask(__name__)
 
 async def find():
     devices = await BleakScanner.discover()
@@ -24,7 +24,7 @@ async def find():
         #    print("       Model Number: {0}".format("".join(map(chr, model_number))))
 
 
-async def set_moisture(address, level):
+async def set_moisture_level(address, level):
     print(f"searching for device {address} ({timeout}s timeout)")
     try:
         async with BleakClient(address,timeout=timeout) as client:
@@ -43,10 +43,13 @@ async def set_moisture(address, level):
 
 @app.route("/set/<level>", methods=['POST'])
 def set_moisture(level):
-    global moisture_level
-    moisture_level = level
-    set_moisture(addr, moisture_level)
-    return {"result" : f"set to {moisture_level}"}
+    if (int(level) >= 0 and int(level) <= 700):
+        global moisture_level
+        moisture_level = int(level)
+        #set_moisture(addr, moisture_level)
+        return {"result" : f"set to {moisture_level}"}
+    else:
+        return {"result" : f"Invalid level"}
     
 @app.route("/get", methods=['GET'])
 def get_moisture():
