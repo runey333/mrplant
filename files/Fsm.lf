@@ -13,7 +13,7 @@ preamble {=
         // MAC address: c0:98:e5:49:xx:xx
         // where the last two octets are given by the device_id below.
         .platform_id       = 0x49,   // The 4th octet in device BLE address.
-        .device_id         = 0xAABB, // TODO: replace with your lab bench number
+        .device_id         = 0x0005, // TODO: replace with your lab bench number
         .adv_name          = "ROMI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(100, UNIT_0_625_MS),
         .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),

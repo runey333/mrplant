@@ -7,8 +7,8 @@ import sys
 app = Flask(__name__)
 
 #args = parse_ble_args('Print advertisement data from a BLE device')
-#addr = args.addr.lower()
-#timeout = args.timeout
+addr = "c0:98:e5:49:00:07"
+timeout = 10.0
 #handle_sigint()
 
 moisture_level = 500
