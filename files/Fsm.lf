@@ -10,10 +10,10 @@ preamble {=
     // BLE Configuration specifies the MAC address and
     // intervals for advertising and connections.
     static simple_ble_config_t ble_config = {
-        // MAC address: c0:98:e5:49:xx:xx
+        // MAC address: c0:98:e5:49:xx:xx    e5:cc:dd:dd:xx:xx
         // where the last two octets are given by the device_id below.
         .platform_id       = 0x49,   // The 4th octet in device BLE address.
-        .device_id         = 0x0005, // TODO: replace with your lab bench number
+        .device_id         = 0x0003, // TODO: replace with your lab bench number
         .adv_name          = "ROMI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(100, UNIT_0_625_MS),
         .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
@@ -42,11 +42,16 @@ reactor MoistureSetter(period:time(100 ms)) {
         simple_ble_app_t* moisture_app;
         moisture_app = simple_ble_init(&ble_config);
 
-        simple_ble_add_service(&moisture_service);  
+        simple_ble_add_service(&moisture_service);
+
+        int *DEVICE_ADDR = 0x100000A4;
+
         simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
             sizeof(MOISTURE_LEVEL), (uint8_t*)&MOISTURE_LEVEL,
             &moisture_service, &moisture_characteristic);
         simple_ble_adv_only_name();
+        
+        //printf("Device addr = %x\n", *DEVICE_ADDR);
     =}
 
     reaction(t) {=
@@ -62,26 +67,58 @@ reactor FSM(error:int(10)) {
     state high:int(300);
     output water:bool;
     ms = new MoistureSetter();
+    timer t(0, 3000 msec);
 
-    reaction(startup) {=
-        self->low = MOISTURE_LEVEL - self->error;
-        self->high = MOISTURE_LEVEL + self->error;
-    =}
+    
     initial mode IDLE {
+        reaction(startup) {=
+            self->low = MOISTURE_LEVEL - self->error;
+            self->high = MOISTURE_LEVEL + self->error;
+            printf("IDLE\n");
+            printf("LOW: %d\n", self->low);
+            printf("HIGH: %d\n", self->high);
+        =}
         reaction(moisture) -> WATERING, water {=
             if (moisture->value < self->low) {
                 lf_set_mode(WATERING);
                 lf_set(water, true);
+            } else {
+                lf_set(water, false);
             }
+        =}
+        reaction(t) {=
+            self->low = MOISTURE_LEVEL - self->error;
+            self->high = MOISTURE_LEVEL + self->error;
+            printf("MOISTURE SET: %d\n", MOISTURE_LEVEL);
+            printf("IDLE\n");
+            printf("LOW: %d\n", self->low);
+            printf("HIGH: %d\n", self->high);
         =}
     }
 
     mode WATERING {
+        reaction(startup) {=
+            self->low = MOISTURE_LEVEL - self->error;
+            self->high = MOISTURE_LEVEL + self->error;
+            printf("WATERING\n");
+            printf("LOW: %d\n", self->low);
+            printf("HIGH: %d\n", self->high);
+        =}
         reaction(moisture) -> IDLE, water {=
             if (moisture->value > self->high) {
                 lf_set_mode(IDLE);
                 lf_set(water, false);
+            } else {
+                lf_set(water, true);
             }
+        =}
+        reaction(t) {=
+            self->low = MOISTURE_LEVEL - self->error;
+            self->high = MOISTURE_LEVEL + self->error;
+            printf("MOISTURE SET: %d\n", MOISTURE_LEVEL);
+            printf("WATERING\n");
+            printf("LOW: %d\n", self->low);
+            printf("HIGH: %d\n", self->high);
         =}
     }
 }

@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from dateutil.parser import ParserError
 
 def get_moisture():
     response = requests.get("http://127.0.0.1:5000/get")
@@ -10,7 +11,7 @@ def set_target(level):
     response = requests.post(f"http://127.0.0.1:5000/set/{level}")
     st.write(response.json()) 
 
-st.button("View Moisture Level", on_click=get_moisture);
+st.button("View Moisture Level", on_click=get_moisture)
 
 target = st.text_input("Target Moisture Level")
 set_click = st.button("Set Target Moisture Level")

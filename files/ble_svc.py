@@ -7,7 +7,7 @@ import sys
 app = Flask(__name__)
 
 #args = parse_ble_args('Print advertisement data from a BLE device')
-addr = "c0:98:e5:49:00:07"
+addr = "c0:98:e5:49:00:03"
 timeout = 10.0
 #handle_sigint()
 
