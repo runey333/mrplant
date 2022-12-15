@@ -1,92 +1,64 @@
 target C;
 
-preamble {=
-    #include "simple_ble.h"
-
-    // Data structures needed for BLE.
-    // See https://github.com/lab11/nrf52x-base/blob/master/lib/simple_ble/README.md
-    static uint16_t MOISTURE_LEVEL = 500;
-
-    // BLE Configuration specifies the MAC address and
-    // intervals for advertising and connections.
-    static simple_ble_config_t ble_config = {
-        // MAC address: c0:98:e5:49:xx:xx
-        // where the last two octets are given by the device_id below.
-        .platform_id       = 0x49,   // The 4th octet in device BLE address.
-        .device_id         = 0x0005, // TODO: replace with your lab bench number
-        .adv_name          = "ROMI", // used in advertisements if there is room
-        .adv_interval      = MSEC_TO_UNITS(100, UNIT_0_625_MS),
-        .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
-        .max_conn_interval = MSEC_TO_UNITS(200, UNIT_1_25_MS),
-    };
-
-    // Specify a unique ID for the ROMI service.
-    // UUID: 79 0a 19 15 62 84 4d 1a 95 7d 23 be 70 84 70 bb
-
-    static simple_ble_service_t moisture_service = {{
-        .uuid128 = {0xbb,0x70,0x84,0x70,0xbe,0x23,0x7d,0x95,
-                    0x1a,0x4d,0x84,0x62,0x15,0x19,0x0a,0x79}
-    }};
-
-    // Characteristic reflecting key presses.
-    // The characteristic is identified within the service by a 16-bit unique ID.
-    static simple_ble_char_t moisture_characteristic = {.uuid16 = 0xda05};
-=}
-
-reactor MoistureSetter(period:time(100 ms)) {
-    timer t(0, period);
-
-    reaction(startup) {=
-        // Set up BLE.
-        // See https://github.com/lab11/nrf52x-base/blob/master/lib/simple_ble/README.md
-        simple_ble_app_t* moisture_app;
-        moisture_app = simple_ble_init(&ble_config);
-
-        simple_ble_add_service(&moisture_service);  
-        simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-            sizeof(MOISTURE_LEVEL), (uint8_t*)&MOISTURE_LEVEL,
-            &moisture_service, &moisture_characteristic);
-        simple_ble_adv_only_name();
-    =}
-
-    reaction(t) {=
-
-        // Your code goes here.
-    =}
-}
-
-reactor FSM(error:int(10)) {
+reactor FSM(error:int(100)) {
 
     input moisture:int;
     state low:int(300);
     state high:int(300);
     output water:bool;
-    ms = new MoistureSetter();
+    timer t(0, 3000 msec);
 
     
     initial mode IDLE {
-        reaction(startup) -> low, high {=
+        reaction(startup) {=
             self->low = MOISTURE_LEVEL - self->error;
             self->high = MOISTURE_LEVEL + self->error;
+            printf("IDLE\tLOW: %d\tHIGH: %d\n", self->low, self->high);
+            // printf("IDLE\n");
+            // printf("LOW: %d\n", self->low);
+            // printf("HIGH: %d\n", self->high);
         =}
         reaction(moisture) -> WATERING, water {=
             if (moisture->value < self->low) {
                 lf_set_mode(WATERING);
                 lf_set(water, true);
+            } else {
+                lf_set(water, false);
             }
+        =}
+        reaction(t) {=
+            self->low = MOISTURE_LEVEL - self->error;
+            self->high = MOISTURE_LEVEL + self->error;
+            printf("MOISTURE SET: %d\n", MOISTURE_LEVEL);
+            printf("IDLE\n");
+            //printf("LOW: %d\n", self->low);
+            //printf("HIGH: %d\n", self->high);
         =}
     }
 
     mode WATERING {
-        reaction(startup) -> low, high {=
+        reaction(startup) {=
             self->low = MOISTURE_LEVEL - self->error;
             self->high = MOISTURE_LEVEL + self->error;
+            printf("WATERING\tLOW: %d\tHIGH: %d\n", self->low, self->high);
+            //printf("LOW: %d\n", self->low);
+            //printf("HIGH: %d\n", self->high);
         =}
         reaction(moisture) -> IDLE, water {=
             if (moisture->value > self->high) {
                 lf_set_mode(IDLE);
                 lf_set(water, false);
+            } else {
+                lf_set(water, true);
             }
+        =}
+        reaction(t) {=
+            self->low = MOISTURE_LEVEL - self->error;
+            self->high = MOISTURE_LEVEL + self->error;
+            printf("MOISTURE SET: %d\n", MOISTURE_LEVEL);
+            printf("WATERING\n");
+            //printf("LOW: %d\n", self->low);
+            //printf("HIGH: %d\n", self->high);
         =}
     }
 }
