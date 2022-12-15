@@ -5,7 +5,7 @@ target C {
 
 import MoistureSetter from "lib/MoistureBLE.lf"
 import Pump from "lib/Pump.lf"
-import Moisture from "lib/SensorADC.lf"
+import Moisture1, Moisture2 from "lib/SensorADC.lf"
 import FSM from "lib/Fsm.lf"
 preamble {=
     #include "nrf_saadc.h"
@@ -25,8 +25,8 @@ main reactor {
     state avgMoisture:int(0);
     ms = new MoistureSetter();
     fsm = new FSM(error = 10);
-    ms1 = new Moisture(pin={=NRF_SAADC_INPUT_AIN1=}, sensor=1);
-    ms2 = new Moisture(pin={=NRF_SAADC_INPUT_AIN4=}, sensor=2);
+    ms1 = new Moisture1();
+    ms2 = new Moisture2();
     pump = new Pump();
 
     reaction(t) -> ms1.trigger, ms2.trigger {=

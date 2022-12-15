@@ -68,7 +68,7 @@ reactor Pump {
     reaction(water) -> watering{=
         if(water->value) {
             //app_pwm_enable(&m_pwm0);
-            pwm_duty_cycle_values.channel_0 = 80; // 100% duty cycle
+            pwm_duty_cycle_values.channel_0 = 100; // 100% duty cycle
             pwm_sequence.values.p_individual = &pwm_duty_cycle_values;
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
             lf_set(watering,true);
