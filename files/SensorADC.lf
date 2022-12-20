@@ -11,10 +11,10 @@ preamble{=
     #define ANALOG_PIN2 NRF_SAADC_INPUT_AIN4
 
     int calibrationFunc1 (int val) {
-        return (int)((val+200)/30); //(int)((val+200)/20);
+        return (int)((val+200)/30);
     }
     int calibrationFunc2 (int val) {
-        return (int)((val+250)/30); //(int)((val+250)/22);
+        return (int)((val+250)/30);
     }
 
     void saadc_callback (nrfx_saadc_evt_t const * p_event) {
@@ -27,7 +27,6 @@ preamble{=
         APP_ERROR_CHECK(error_code);
         return val;
     }
-    
 
     bool moisture_sensor1_initialized = false;
     bool moisture_sensor2_initialized = false;
@@ -53,7 +52,6 @@ reactor Moisture1 {
         channel_config.acq_time     = NRF_SAADC_ACQTIME_40US;
         error_code = nrfx_saadc_channel_init(0, &channel_config);
         APP_ERROR_CHECK(error_code);
-        printf("C %d, P %d\n", 0, channel_config.pin_p);
     =}
 
     reaction(trigger) -> moistureLvl{=
@@ -79,7 +77,6 @@ reactor Moisture2 {
         channel_config.acq_time     = NRF_SAADC_ACQTIME_40US;
         ret_code_t error_code = nrfx_saadc_channel_init(1, &channel_config);
         APP_ERROR_CHECK(error_code);
-        printf("C %d, P %d\n", 1, channel_config.pin_p);
     =}
 
     reaction(trigger) -> moistureLvl{=

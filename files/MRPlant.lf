@@ -7,16 +7,9 @@ import MoistureSetter from "lib/MoistureBLE.lf"
 import Pump from "lib/Pump.lf"
 import Moisture1, Moisture2 from "lib/SensorADC.lf"
 import FSM from "lib/Fsm.lf"
+
 preamble {=
     #include "nrf_saadc.h"
-
-    // int calibrationFunc1 (int val) {
-    //     printf("Reached calib func 1 with val %d\n", val);
-    //     return (int)((val+200)/20);
-    // }
-    // int (*p1)(int) = &calibrationFunc1;
-
-
 =}
 
 main reactor {
@@ -39,18 +32,7 @@ main reactor {
         self->avgMoisture = (int)((ms1.moistureLvl->value+ms2.moistureLvl->value)/2);
         lf_set(fsm.moisture, self->avgMoisture);
         printf("Moisture level: %d\tMS1: %d\tMS2: %d\n", self->avgMoisture, ms1.moistureLvl->value, ms2.moistureLvl->value);
-
     =}
-
-    // reaction(t) -> ms2.trigger {=
-    //     lf_set(ms2.trigger, self->toggle);
-    //     self->toggle = !self->toggle;
-    // =}
-
-    // reaction(ms2.moistureLvl) -> fsm.moisture {=
-    //     lf_set(fsm.moisture, ms2.moistureLvl->value);
-    //     printf("Moisture level 2: %d\n", ms2.moistureLvl->value);
-    // =}
 
     reaction(fsm.water) -> pump.water {=
         lf_set(pump.water, fsm.water->value);

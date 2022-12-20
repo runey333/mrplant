@@ -14,9 +14,6 @@ reactor FSM(error:int(100)) {
             self->low = MOISTURE_LEVEL - self->error;
             self->high = MOISTURE_LEVEL + self->error;
             printf("IDLE\tLOW: %d\tHIGH: %d\n", self->low, self->high);
-            // printf("IDLE\n");
-            // printf("LOW: %d\n", self->low);
-            // printf("HIGH: %d\n", self->high);
         =}
         reaction(moisture) -> WATERING, water {=
             if (moisture->value < self->low) {
@@ -31,8 +28,6 @@ reactor FSM(error:int(100)) {
             self->high = MOISTURE_LEVEL + self->error;
             printf("MOISTURE SET: %d\n", MOISTURE_LEVEL);
             printf("IDLE\n");
-            //printf("LOW: %d\n", self->low);
-            //printf("HIGH: %d\n", self->high);
         =}
     }
 
@@ -41,8 +36,6 @@ reactor FSM(error:int(100)) {
             self->low = MOISTURE_LEVEL - self->error;
             self->high = MOISTURE_LEVEL + self->error;
             printf("WATERING\tLOW: %d\tHIGH: %d\n", self->low, self->high);
-            //printf("LOW: %d\n", self->low);
-            //printf("HIGH: %d\n", self->high);
         =}
         reaction(moisture) -> IDLE, water {=
             if (moisture->value > self->high) {
@@ -57,8 +50,6 @@ reactor FSM(error:int(100)) {
             self->high = MOISTURE_LEVEL + self->error;
             printf("MOISTURE SET: %d\n", MOISTURE_LEVEL);
             printf("WATERING\n");
-            //printf("LOW: %d\n", self->low);
-            //printf("HIGH: %d\n", self->high);
         =}
     }
 }

@@ -41,16 +41,13 @@ preamble{=
     };
 
     static nrf_pwm_sequence_t pwm_sequence =
-    {            //app_pwm_enable(&m_pwm0);
+    {            
 
         .values.p_individual = &pwm_duty_cycle_values,
         .length          = (sizeof(pwm_duty_cycle_values) / sizeof(uint16_t)),
         .repeats         = 0,
         .end_delay       = 0
     };
-
-
-
     
 =}
 
@@ -67,14 +64,12 @@ reactor Pump {
 
     reaction(water) -> watering{=
         if(water->value) {
-            //app_pwm_enable(&m_pwm0);
             pwm_duty_cycle_values.channel_0 = 100; // 100% duty cycle
             pwm_sequence.values.p_individual = &pwm_duty_cycle_values;
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
             lf_set(watering,true);
             printf("Should be watering\n");
         } else {
-            //app_pwm_disable(&m_pwm0);
             pwm_duty_cycle_values.channel_0 = 0; // PWM turned off
             pwm_sequence.values.p_individual = &pwm_duty_cycle_values;
             nrfx_pwm_simple_playback(&m_pwm0, &pwm_sequence, 1, NRFX_PWM_FLAG_LOOP);
